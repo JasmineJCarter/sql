@@ -56,9 +56,55 @@ The store wants to keep customer addresses. Propose two architectures for the CU
 
 **HINT:** search type 1 vs type 2 slowly changing dimensions. 
 
+#### ERD 1: Bookstore logical model (Prompt 1)
+
+![Bookstore logical data model](./images/02_bookstore_erd_prompt1.png)
+
+The model contains the `customer`, `order`, `sales`, `employee` and `book` tables plus a `date` (calendar) table. A customer places many orders, and an employee processes many orders. An order has one or more `sales` lines, and each line is for one book. Orders are linked to the `date` table through `order_date_id`, so reporting by year, quarter, month, weekday or holiday does not need date calculations on every query.
+
+#### ERD 2: Bookstore logical model with employee shifts (Prompt 2)
+
+![Bookstore logical data model with employee shifts](./images/02_bookstore_erd_prompt2_with_shifts.png)
+
+`employee_shift` was added to split the working day into a morning and an evening shift. Each row assigns one employee to one shift on one date: `shift_type` holds `'morning'` or `'evening'`, with `start_time` and `end_time` (for example 08:00-14:00 and 14:00-20:00). It links to `employee` through `employee_id` and to `date` through `shift_date_id`. An employee can have many shifts, and a date can have many shifts.
+
+#### Prompt 3: CUSTOMER_ADDRESS architectures
+
 ```
-Your answer...
+Type 1 slowly changing dimension (overwrite) -- no history is kept.
+
+CUSTOMER_ADDRESS
+  customer_id (PK, FK -> customer.customer_id)
+  street_address
+  city
+  province_state
+  postal_code
+  country
+
+Each customer has exactly one address row. When a customer moves, the existing row is updated
+(overwritten) with the new address, so the old address is lost.
+
+
+Type 2 slowly changing dimension (retain changes) -- full history is kept.
+
+CUSTOMER_ADDRESS
+  customer_address_id (PK, surrogate key)
+  customer_id (FK -> customer.customer_id)
+  street_address
+  city
+  province_state
+  postal_code
+  country
+  effective_start_date
+  effective_end_date   (NULL or 9999-12-31 while the address is current)
+  is_current           (boolean)
+
+When a customer moves, the current row is closed by setting effective_end_date and is_current = false,
+and a new row is inserted with the new address and is_current = true. A customer can have many
+address rows over time, so past orders can still be tied to the address the customer had at that time.
 ```
+
+The first design (overwrite) is **Type 1** and the second design (retain changes with start/end dates and a current flag) is **Type 2**.
 
 ***
 
@@ -181,6 +227,7 @@ Steps to complete this part of the assignment:
 - Read the article
 - Write, within this markdown file, between 250 and 1000 words. No additional citations/sources are required.
 
+
 ### Ethics
 
 Read: Boykis, V. (2019, October 16). _Neural nets are just people all the way down._ Normcore Tech. <br>
@@ -192,5 +239,11 @@ Consider, for example, concepts of labour, bias, LLM proliferation, moderating c
 
 
 ```
-Your thoughts...
+The article ‘Neural nets are just people all the way down’ by Vicki Boykis demonstrates that machine learning is guided by humans—not just machines.
+In modern day society, we are adapting to using machine learning. Vicki provides an example of a clothing store to show that robots cannot manipulate fabrics for clothing production as well as humans can, especially with fast fashion. We must program the computers to identify objects the way that humans do using neural nets. Datasets are created manually by hundreds of thousands of people to create deep neural networks. This outlines a prime technology and society relationship, whereby we—as a society—shape technology. Decision-making in high-tech neural networks relies on manual human labor.
+
+So, what are some more ethical implications to this? To answer that, based on the article, one extreme view is that algorithms have the potential to ‘spread lies’ and ‘break democracy’. Large language model (LLM) proliferation refers to the massive and rapid spread of publicly available text deployed across global industries and consumer applications. LLM is a machine learning model (i.e., a neural network) trained on a large amount of text for natural language processing tasks. Since these models learn from huge amounts of text, they have the potential to spread public (and leak private) information rapidly. Notably, from an ethical standpoint, these models can amplify certain patterns in prejudices, strain data integrity, exploit workers, and have longstanding copyright infringement issues. Global workers in lower-income countries may be exploited in content moderation. Data labellers can be poorly paid and unseen. They may not receive adequate payment for their services. This is an ethical consideration for global sharing with technology. Humans are still needed where automation is expected.
+
+Fortunately, these modern technologies continue to have a transformative potential to improve society through spreading and developing important information that benefits society. Overall, it is important that we take responsibility, as humans, to moderate content and continually train in the field of artificial intelligence while ensuring ethical issues are reduced. Artificial intelligence as a modern field hires specialized scientists to overcome labour gaps. These scientists must be continually training with ethical principles in mind to ensure a safe bridging between technology and society. Neural networks and deep machine learning shape our past, present, and future.
+
 ```
