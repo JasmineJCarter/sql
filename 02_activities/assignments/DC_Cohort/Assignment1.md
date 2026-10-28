@@ -108,6 +108,10 @@ Please do not pick the exact same tables that I have already diagrammed. For exa
 
 #### Logical Data Model: `customer` and `customer_purchases`
 
+![Logical data model of customer and customer_purchases](./images/01_logical_model_customer_customer_purchases.png)
+
+The same model in Mermaid form:
+
 ```mermaid
 erDiagram
     customer ||--o{ customer_purchases : makes
